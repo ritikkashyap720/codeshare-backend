@@ -27,7 +27,7 @@ const { signal } = controller;
 const executePython = (filepath, input) => {
   return new Promise((resolve, reject) => {
     const child = exec(
-      `python -u "${filepath}"`, { signal },
+      `python3 -u "${filepath}"`, { signal },
       (error, stdout, stderr) => {
         error && reject({ error, stderr });
         stderr && reject(stderr);

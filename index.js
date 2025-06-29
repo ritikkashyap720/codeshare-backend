@@ -18,7 +18,7 @@ const MONGO_URL = process.env.MONGO_URL
 connectDB(MONGO_URL).then(console.log("Database connected")).catch((err) => { console.log("Error:", err) })
 
 const io = new Server(server, {
-  cors: { origin: "https://codeshare-43ff.onrender.com", methods: ["GET", "POST"] },
+  cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] },
 });
 
 // get all connected user in room
@@ -112,7 +112,7 @@ app.use(express.json())
 
 
 // Routes
-
+app.get("/", (req, res) => res.send("Hello World!"))
 app.use("/compile", router)
 app.use("/user", user)
 

@@ -1,9 +1,9 @@
-# Base image with both Node.js and Python
+# Base image with Node.js
 FROM node:18
 
-# Install Python 3 and pip
+# Install Python 3, pip, g++, and OpenJDK for Java code execution
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
+    apt-get install -y python3 python3-pip g++ openjdk-17-jdk && \
     apt-get clean
 
 # Set working directory

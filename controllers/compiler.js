@@ -29,23 +29,20 @@ async function handleCompilation(req, res) {
             console.log(jobId)
             res.status(201).json({ jobId, status: "pending" });
             try {
-                var output = await executePython(job.filepath, input);
+                let output = await executePython(job.filepath, input);
                 if (output) {
                     job["completedAt"] = new Date();
                     job["output"] = output;
                     job["status"] = "success";
                     await job.save();
                     deleteFiles(filepath)
+                } else {
+                    job["completedAt"] = new Date();
+                    job["output"] = JSON.stringify({ error: { code: "ERR_CHILD_PROCESS_STDIO_MAXBUFFER" } });
+                    job["status"] = "error";
+                    await job.save();
+                    deleteFiles(filepath)
                 }
-                setTimeout(async () => {
-                    if (!output) {
-                        deleteFiles(filepath)
-                        job["completedAt"] = new Date();
-                        job["output"] = JSON.stringify({ error: { code: "ERR_CHILD_PROCESS_STDIO_MAXBUFFER" } });
-                        job["status"] = "error";
-                        await job.save();
-                    }
-                }, 3000)
             } catch (error) {
                 job["completedAt"] = new Date();
                 job["output"] = JSON.stringify(error);
@@ -63,23 +60,20 @@ async function handleCompilation(req, res) {
             console.log(jobId)
             res.status(201).json({ jobId, status: "pending" });
             try {
-                var output = await executeCpp(filepath, input);
+                let output = await executeCpp(filepath, input);
                 if (output) {
                     job["completedAt"] = new Date();
                     job["output"] = output;
                     job["status"] = "success";
                     await job.save();
                     deleteFiles(filepath)
+                } else {
+                    job["completedAt"] = new Date();
+                    job["output"] = JSON.stringify({ error: { code: "ERR_CHILD_PROCESS_STDIO_MAXBUFFER" } });
+                    job["status"] = "error";
+                    await job.save();
+                    deleteFiles(filepath)
                 }
-                setTimeout(async () => {
-                    if (!output) {
-                        deleteFiles(filepath)
-                        job["completedAt"] = new Date();
-                        job["output"] = JSON.stringify({ error: { code: "ERR_CHILD_PROCESS_STDIO_MAXBUFFER" } });
-                        job["status"] = "error";
-                        await job.save();
-                    }
-                }, 3000)
             } catch (error) {
                 job["completedAt"] = new Date();
                 job["output"] = JSON.stringify(error);
@@ -99,29 +93,26 @@ async function handleCompilation(req, res) {
             console.log(jobId)
             res.status(201).json({ jobId, status: "pending" });
             try {
-                var output = await executeJava(filepath, input);
+                let output = await executeJava(filepath, input);
                 if (output) {
-                    deleteFiles(filepath)
                     job["completedAt"] = new Date();
                     job["output"] = output;
                     job["status"] = "success";
                     await job.save();
+                    deleteFiles(filepath)
+                }else {
+                    job["completedAt"] = new Date();
+                    job["output"] = JSON.stringify({ error: { code: "ERR_CHILD_PROCESS_STDIO_MAXBUFFER" } });
+                    job["status"] = "error";
+                    await job.save();
+                    deleteFiles(filepath)
                 }
-                setTimeout(async () => {
-                    if (!output) {
-                        deleteFiles(filepath)
-                        job["completedAt"] = new Date();
-                        job["output"] = JSON.stringify({ error: { code: "ERR_CHILD_PROCESS_STDIO_MAXBUFFER" } });
-                        job["status"] = "error";
-                        await job.save();
-                    }
-                }, 3000)
             } catch (error) {
-                deleteFiles(filepath)
                 job["completedAt"] = new Date();
                 job["output"] = JSON.stringify(error);
                 job["status"] = "error";
                 await job.save();
+                deleteFiles(filepath)
             }
 
 
@@ -172,14 +163,15 @@ function handleDownload(req, res) {
 
 async function handleCheckStatus(req, res) {
     const jobId = req.params.jobId
-    console.log("jobid", jobId)
     if (jobId) {
         const result = await Job.findOne({ "_id": jobId })
-        console.log(result)
+        console.log("requested jobid", jobId, result)
         if (result) {
-            if(result.error == "error" || result.status == "success"){
+            if (result.status == "error" || result.status == "success") {
                 res.json(result)
                 await Job.deleteOne({ "_id": jobId })
+            } else {
+                res.json(result)
             }
         } else {
             res.status(404).json({ "status": "invalid job id" })
